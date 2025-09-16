@@ -40,7 +40,7 @@
 ---
 
 include:
-  - shield: lily58_left
-    board: mikoto
-  - shield: lily58_right
+  - shield: lily58_left nice_oled
+    board: mikoto 
+  - shield: lily58_right nice_oled
     board: mikoto
