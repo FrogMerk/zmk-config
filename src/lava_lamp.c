@@ -5,23 +5,29 @@
 #include <zmk/events/position_state_changed.h>
 
 #define NUM_BLOBS           5
-#define DISP_W              32
-#define DISP_H              128
+/*
+ * Native LVGL coords for SSD1306 128x32: x=0..127, y=0..31.
+ * Display is physically mounted portrait (rotated 90 deg), so the 128-pixel
+ * x-axis becomes the visual vertical axis and y becomes visual horizontal.
+ * No lv_disp_set_rotation — that function is not safe on 1-bit mono displays.
+ */
+#define SCREEN_X_MAX        128   /* visual height, LVGL x range */
+#define SCREEN_Y_MAX        32    /* visual width,  LVGL y range */
 #define BLOB_R_MIN          4
 #define BLOB_R_MAX          9
 
 /* Activity: 0-100, bumped on each keypress, decays over time */
 #define ACTIVITY_PER_PRESS  25
-#define ACTIVITY_DECAY_RATE 5   /* ticks between each -1 decay step */
+#define ACTIVITY_DECAY_RATE 5
 
-/* Rise speed in fixed-point x16 px/tick */
-#define SPEED_MIN_FP        8   /* 0.5 px/tick at idle */
-#define SPEED_RANGE_FP      48  /* +3 px/tick at full activity */
+/* Rise speed in fixed-point x16 px/tick along the x-axis */
+#define SPEED_MIN_FP        8    /* 0.5 px/tick at idle */
+#define SPEED_RANGE_FP      48   /* +3 px/tick at full activity */
 
 struct blob {
     lv_obj_t *obj;
-    int16_t   cx;
-    int16_t   cy_fp;
+    int16_t   cx_fp;   /* LVGL x in fixed-point; decreases as blob rises */
+    int16_t   cy;      /* LVGL y (visual horizontal spread), integer */
     int16_t   r;
     int16_t   speed_fp;
 };
@@ -41,15 +47,15 @@ static int16_t blob_speed(void)
 static void place_blob(struct blob *b)
 {
     lv_obj_set_size(b->obj, 2 * b->r, 2 * b->r);
-    lv_obj_set_pos(b->obj, b->cx - b->r, (b->cy_fp >> 4) - b->r);
+    lv_obj_set_pos(b->obj, (b->cx_fp >> 4) - b->r, b->cy - b->r);
 }
 
 static void init_blob(struct blob *b, int index)
 {
-    b->r        = BLOB_R_MIN + (int16_t)(sys_rand32_get() % (BLOB_R_MAX - BLOB_R_MIN + 1));
-    b->cx       = (int16_t)(b->r + sys_rand32_get() % (DISP_W - 2 * b->r));
-    int16_t y   = (int16_t)(DISP_H * index / NUM_BLOBS + b->r);
-    b->cy_fp    = (int16_t)(y << 4);
+    b->r       = BLOB_R_MIN + (int16_t)(sys_rand32_get() % (BLOB_R_MAX - BLOB_R_MIN + 1));
+    b->cy      = (int16_t)(b->r + sys_rand32_get() % (SCREEN_Y_MAX - 2 * b->r));
+    int16_t x  = (int16_t)(SCREEN_X_MAX * index / NUM_BLOBS + b->r);
+    b->cx_fp   = (int16_t)(x << 4);
     b->speed_fp = blob_speed();
     place_blob(b);
 }
@@ -71,20 +77,18 @@ static void anim_tick(lv_timer_t *t)
 
     for (int i = 0; i < NUM_BLOBS; i++) {
         struct blob *b = &blobs[i];
-        b->cy_fp -= b->speed_fp;
+        b->cx_fp -= b->speed_fp;   /* rise = decrease x */
 
-        if ((b->cy_fp >> 4) < -b->r) {
-            b->r        = BLOB_R_MIN + (int16_t)(sys_rand32_get() % (BLOB_R_MAX - BLOB_R_MIN + 1));
-            b->cx       = (int16_t)(b->r + sys_rand32_get() % (DISP_W - 2 * b->r));
-            b->cy_fp    = (int16_t)((DISP_H + b->r) << 4);
+        if ((b->cx_fp >> 4) < -b->r) {
+            b->r       = BLOB_R_MIN + (int16_t)(sys_rand32_get() % (BLOB_R_MAX - BLOB_R_MIN + 1));
+            b->cy      = (int16_t)(b->r + sys_rand32_get() % (SCREEN_Y_MAX - 2 * b->r));
+            b->cx_fp   = (int16_t)((SCREEN_X_MAX + b->r) << 4);
             b->speed_fp = blob_speed();
         }
 
         place_blob(b);
     }
 }
-
-/* --- Keypress event wiring --------------------------------------------- */
 
 struct lava_key_state { bool pressed; };
 
@@ -111,12 +115,8 @@ ZMK_DISPLAY_WIDGET_LISTENER(lava_key, struct lava_key_state,
                             lava_key_update_cb, lava_key_get_state)
 ZMK_SUBSCRIPTION(lava_key, zmk_position_state_changed)
 
-/* --- Entry point -------------------------------------------------------- */
-
 lv_obj_t *zmk_display_status_screen(void)
 {
-    lv_disp_set_rotation(lv_disp_get_default(), LV_DISP_ROT_90);
-
     lv_obj_t *screen = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(screen, lv_color_black(), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
