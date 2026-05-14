@@ -25,10 +25,11 @@ struct blob {
     int16_t   speed_fp;
 };
 
-static struct blob blobs[NUM_BLOBS];
-static lv_timer_t *anim_timer;
-static uint8_t     activity;
-static uint8_t     decay_counter;
+static struct blob    blobs[NUM_BLOBS];
+static lv_style_t     blob_style;
+static lv_timer_t    *anim_timer;
+static uint8_t        activity;
+static uint8_t        decay_counter;
 
 static int16_t blob_speed(void)
 {
@@ -116,16 +117,20 @@ lv_obj_t *zmk_display_status_screen(void)
     lv_obj_set_style_pad_all(screen, 0, LV_PART_MAIN);
     lv_obj_clear_flag(screen, LV_OBJ_FLAG_SCROLLABLE);
 
+    /* One shared style for all blobs avoids per-blob heap allocation */
+    lv_style_init(&blob_style);
+    lv_style_set_radius(&blob_style, LV_RADIUS_CIRCLE);
+    lv_style_set_bg_color(&blob_style, lv_color_black());
+    lv_style_set_bg_opa(&blob_style, LV_OPA_COVER);
+    lv_style_set_border_width(&blob_style, 0);
+    lv_style_set_pad_all(&blob_style, 0);
+
     for (int i = 0; i < NUM_BLOBS; i++) {
         blobs[i].obj = lv_obj_create(screen);
         if (!blobs[i].obj) {
             continue;
         }
-        lv_obj_set_style_radius(blobs[i].obj, LV_RADIUS_CIRCLE, LV_PART_MAIN);
-        lv_obj_set_style_bg_color(blobs[i].obj, lv_color_black(), LV_PART_MAIN);
-        lv_obj_set_style_bg_opa(blobs[i].obj, LV_OPA_COVER, LV_PART_MAIN);
-        lv_obj_set_style_border_width(blobs[i].obj, 0, LV_PART_MAIN);
-        lv_obj_set_style_pad_all(blobs[i].obj, 0, LV_PART_MAIN);
+        lv_obj_add_style(blobs[i].obj, &blob_style, 0);
         lv_obj_clear_flag(blobs[i].obj, LV_OBJ_FLAG_SCROLLABLE);
         init_blob(&blobs[i], i);
     }
