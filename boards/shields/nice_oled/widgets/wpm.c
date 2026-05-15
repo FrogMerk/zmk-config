@@ -245,7 +245,7 @@ static void draw_graph(lv_obj_t *canvas, const struct status_state *state) {
 
         // modificar aqui par la posicion de la grafica
         points[i].x = i * 3.44;
-        points[i].y = 59 - (value * 30 / max);
+        points[i].y = 28 + (value * 30 / max);
         // points[i].y = 132 - (value * 32 / max);
     }
 #else
@@ -268,7 +268,7 @@ static void draw_graph(lv_obj_t *canvas, const struct status_state *state) {
 
     for (int i = 0; i < 10; i++) {
         points[i].x = i * 3.44;
-        points[i].y = 59 - (state->wpm[i] - min) * 30 / range;
+        points[i].y = 28 + (state->wpm[i] - min) * 30 / range;
     }
 #endif
 

@@ -65,7 +65,25 @@ The canvas logical dimensions are set via Kconfig:
 - `CONFIG_NICE_OLED_CUSTOM_CANVAS_WIDTH` (default: 32)
 - `CONFIG_NICE_OLED_CUSTOM_CANVAS_HEIGHT` (default: 128)
 
-When positioning widgets, coordinates are in the **pre-rotation canvas space** — x increases right, y increases down, before the 90° rotation is applied. This means a widget's apparent on-screen position is rotated from where you set it.
+**Coordinate mapping (pre-rotation canvas → visual portrait):**
+
+The SSD1306 connector is on the right edge in landscape orientation. The board is physically mounted 90° so pins end up at portrait bottom. The software 900-centidegree rotation compensates.
+
+| Canvas space | Portrait result |
+|---|---|
+| `canvas_draw_x = 0` | portrait X = 0 (LEFT) — same direction |
+| `canvas_draw_x = 31` | portrait X = 31 (RIGHT) |
+| `canvas_draw_y = 0` | portrait Y = 127 (**BOTTOM**, pins end) |
+| `canvas_draw_y = 127` | portrait Y = 0 (TOP) |
+
+Formula: `portrait_Y = 127 - canvas_draw_y`
+
+For **LVGL object positions** (`lv_obj_align` with `LV_ALIGN_TOP_LEFT, x, y`):
+- `x` offset → portrait horizontal X (same direction)
+- `y` offset → portrait vertical Y **inverted** (`LVGL_y=0` = portrait bottom, `LVGL_y=78` = portrait Y≈49 = near top)
+
+Practical example — bongo cat at `LVGL_y=78`, frame 50px tall:
+- Frame canvas_y = 78..127 → portrait_Y = 0..49 → appears at **portrait top**
 
 ### Active Widgets (set in `config/lily58.conf`)
 

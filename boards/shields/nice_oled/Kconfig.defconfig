@@ -650,13 +650,13 @@ config NICE_OLED_WIDGET_WPM_NEEDLE_CENTER_CUSTOM_Y
 
 config NICE_OLED_WIDGET_WPM_LABEL_CUSTOM_X
     int "WPM label X position"
-    default 0 if NICE_OLED_ON
+    default 8 if NICE_OLED_ON
     default 0 if NICE_EPAPER_ON
     default 0
 
 config NICE_OLED_WIDGET_WPM_LABEL_CUSTOM_Y
     int "WPM label Y position"
-    default 75 if NICE_OLED_ON
+    default 64 if NICE_OLED_ON
     default 103 if NICE_EPAPER_ON
     default 75
 ##}}}
@@ -686,7 +686,7 @@ config NICE_OLED_WIDGET_BONGO_CAT_CUSTOM_X
 
 config NICE_OLED_WIDGET_BONGO_CAT_CUSTOM_Y
     int "Bongo cat widget Y position"
-    default -9 if NICE_OLED_ON
+    default 78 if NICE_OLED_ON
     default 8 if NICE_EPAPER_ON
     default -9
 ##}}}
