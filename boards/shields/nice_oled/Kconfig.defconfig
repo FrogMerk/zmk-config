@@ -14,11 +14,11 @@ config NICE_EPAPER_ON
 
 config NICE_OLED_CUSTOM_CANVAS_WIDTH
     int "Custom Canvas Width"
-    default 68
+    default 32
 
 config NICE_OLED_CUSTOM_CANVAS_HEIGHT
     int "Custom Canvas Height"
-    default 160
+    default 128
 
 config LV_Z_VDB_SIZE
     default 64 if NICE_OLED_ON
@@ -680,7 +680,7 @@ config NICE_OLED_WIDGET_LUNA_CUSTOM_Y
 
 config NICE_OLED_WIDGET_BONGO_CAT_CUSTOM_X
     int "Bongo cat widget X position"
-    default 64 if NICE_OLED_ON # 33 for a other goot position
+    default 0 if NICE_OLED_ON
     default 100 if NICE_EPAPER_ON
     default 64
 

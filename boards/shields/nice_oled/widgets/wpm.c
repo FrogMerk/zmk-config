@@ -215,7 +215,6 @@ static void draw_needle(lv_obj_t *canvas, const struct status_state *state) {
 #endif // IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_SPEEDOMETER)
 
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_LUNA) ||                                                \
-    IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_BONGO_CAT) ||                                           \
     IS_ENABLED(CONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS_FIXED) ||                              \
     !IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_GRAPH)
 #else
@@ -223,7 +222,7 @@ static void draw_grid(lv_obj_t *canvas) {
     lv_draw_img_dsc_t img_dsc;
     lv_draw_img_dsc_init(&img_dsc);
 
-    lv_canvas_draw_img(canvas, -1, 95, &grid, &img_dsc);
+    lv_canvas_draw_img(canvas, 0, 28, &grid, &img_dsc);
 }
 
 static void draw_graph(lv_obj_t *canvas, const struct status_state *state) {
@@ -245,8 +244,8 @@ static void draw_graph(lv_obj_t *canvas, const struct status_state *state) {
         }
 
         // modificar aqui par la posicion de la grafica
-        points[i].x = -36 + i * 7.4;
-        points[i].y = 127 - (value * 32 / max);
+        points[i].x = i * 3.44;
+        points[i].y = 59 - (value * 30 / max);
         // points[i].y = 132 - (value * 32 / max);
     }
 #else
@@ -268,8 +267,8 @@ static void draw_graph(lv_obj_t *canvas, const struct status_state *state) {
     }
 
     for (int i = 0; i < 10; i++) {
-        points[i].x = 0 + i * 7.4;
-        points[i].y = 97 - (state->wpm[i] - min) * 32 / range;
+        points[i].x = i * 3.44;
+        points[i].y = 59 - (state->wpm[i] - min) * 30 / range;
     }
 #endif
 
@@ -326,7 +325,6 @@ void draw_wpm_status(lv_obj_t *canvas, const struct status_state *state) {
     draw_needle(canvas, state);
 #endif // IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_SPEEDOMETER)
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_LUNA) ||                                                \
-    IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_BONGO_CAT) ||                                           \
     IS_ENABLED(CONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS_FIXED) ||                              \
     !IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_GRAPH)
 #else
