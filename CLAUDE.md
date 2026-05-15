@@ -65,25 +65,32 @@ The canvas logical dimensions are set via Kconfig:
 - `CONFIG_NICE_OLED_CUSTOM_CANVAS_WIDTH` (default: 32)
 - `CONFIG_NICE_OLED_CUSTOM_CANVAS_HEIGHT` (default: 128)
 
-**Coordinate mapping (pre-rotation canvas → visual portrait):**
+**Coordinate mapping — two separate systems:**
 
-The SSD1306 connector is on the right edge in landscape orientation. The board is physically mounted 90° so pins end up at portrait bottom. The software 900-centidegree rotation compensates.
+The LVGL display is landscape (128×32) in software. The board is physically rotated 90° so the connector/pins end up at portrait bottom.
+
+**System 1 — Canvas draws** (`lv_canvas_draw_img`, `lv_canvas_draw_line`, `lv_canvas_draw_text`):
 
 | Canvas space | Portrait result |
 |---|---|
-| `canvas_draw_x = 0` | portrait X = 0 (LEFT) — same direction |
+| `canvas_draw_x = 0` | portrait X = 0 (LEFT) |
 | `canvas_draw_x = 31` | portrait X = 31 (RIGHT) |
-| `canvas_draw_y = 0` | portrait Y = 127 (**BOTTOM**, pins end) |
-| `canvas_draw_y = 127` | portrait Y = 0 (TOP) |
+| `canvas_draw_y = 0` | portrait Y = 0 (**TOP**, away from pins) |
+| `canvas_draw_y = 127` | portrait Y = 127 (**BOTTOM**, pins end) |
 
-Formula: `portrait_Y = 127 - canvas_draw_y`
+Formula: `portrait_Y = canvas_draw_y` (same direction, no inversion)
 
-For **LVGL object positions** (`lv_obj_align` with `LV_ALIGN_TOP_LEFT, x, y`):
-- `x` offset → portrait horizontal X (same direction)
-- `y` offset → portrait vertical Y **inverted** (`LVGL_y=0` = portrait bottom, `LVGL_y=78` = portrait Y≈49 = near top)
+**System 2 — LVGL widget positions** (`lv_obj_align` with `LV_ALIGN_TOP_LEFT, CUSTOM_X, CUSTOM_Y` for widgets like the bongo cat animimg):
 
-Practical example — bongo cat at `LVGL_y=78`, frame 50px tall:
-- Frame canvas_y = 78..127 → portrait_Y = 0..49 → appears at **portrait top**
+| LVGL param | Controls | Formula |
+|---|---|---|
+| `CUSTOM_X` (landscape x, 0..127) | portrait **vertical** Y | `portrait_Y = 127 - CUSTOM_X` (inverted) |
+| `CUSTOM_Y` (landscape y, must be ≤31) | portrait **horizontal** X | `portrait_X = CUSTOM_Y` (same direction) |
+
+Practical example — bongo cat at `CUSTOM_X=78`, `CUSTOM_Y=-9`:
+- `portrait_Y = 127 - 78 = 49` (TOP of cat), cat 50px tall → portrait_Y=0..49 = portrait top ✓
+- `CUSTOM_Y=-9` → partially off-screen left, visible portrait_X=0..16 ✓
+- **Warning**: `CUSTOM_Y` must be ≤31 (landscape display height); values >31 make the widget invisible
 
 ### Active Widgets (set in `config/lily58.conf`)
 

@@ -680,13 +680,13 @@ config NICE_OLED_WIDGET_LUNA_CUSTOM_Y
 
 config NICE_OLED_WIDGET_BONGO_CAT_CUSTOM_X
     int "Bongo cat widget X position"
-    default 0 if NICE_OLED_ON
+    default 78 if NICE_OLED_ON
     default 100 if NICE_EPAPER_ON
     default 64
 
 config NICE_OLED_WIDGET_BONGO_CAT_CUSTOM_Y
     int "Bongo cat widget Y position"
-    default 78 if NICE_OLED_ON
+    default -9 if NICE_OLED_ON
     default 8 if NICE_EPAPER_ON
     default -9
 ##}}}
